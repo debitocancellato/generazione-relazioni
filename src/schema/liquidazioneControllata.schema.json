@@ -57,6 +57,28 @@
       "type": "string",
       "description": "OPZIONALE - attestazione sull'impossibilità di acquisire ulteriore attivo da distribuire ai creditori (art. 268 co.3, quarto periodo, CCII). Se omesso, viene usato un testo standard."
     },
+    "apportoTerzi": {
+      "type": ["object", "null"],
+      "description": "SEZIONE CONDIZIONALE - valorizzare se la proposta prevede un apporto di finanza esterna (es. da familiari) a integrazione dell'attivo disponibile per i creditori.",
+      "properties": {
+        "importo": { "type": "number" },
+        "provenienza": { "type": "string", "description": "Es. 'liquidità messa a disposizione da familiari del debitore'" },
+        "tempistica": { "type": "string", "description": "Es. 'entro i primi 6 mesi dall'apertura della procedura'" },
+        "motivazione": { "type": "string", "description": "Argomentazione giuridica a supporto dell'ammissibilità dell'apporto" }
+      }
+    },
+    "beniEsclusiDallaLiquidazione": {
+      "type": "array",
+      "description": "SEZIONE CONDIZIONALE - beni che il debitore propone di tenere fuori dalla massa attiva (es. mutuo prima casa che il debitore continua a pagare regolarmente).",
+      "items": {
+        "type": "object",
+        "required": ["descrizione", "motivazione"],
+        "properties": {
+          "descrizione": { "type": "string" },
+          "motivazione": { "type": "string" }
+        }
+      }
+    },
     "attiImpugnati": {
       "type": "string",
       "default": "Non risultano atti del Debitore impugnati dai creditori.",

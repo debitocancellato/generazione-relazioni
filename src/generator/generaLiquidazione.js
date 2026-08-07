@@ -18,7 +18,7 @@ const { validaDatiLiquidazione, controlliDiCoerenza } = require("./validate");
 function sezioneAttivitaSvolte(dati) {
   return [
     heading1("Attività svolte"),
-    bodyText(
+    ...bodyText(
       `In data ${dati.pratica.dataNominaOCC} il sottoscritto ${dati.pratica.nomeOCC} è stato nominato ` +
       `Organismo di Composizione della Crisi nell'ambito della procedura di Liquidazione controllata ` +
       `promossa dal Sig./Sig.ra ${dati.debitore.nomeCompleto} (C.F. ${dati.debitore.codiceFiscale}), ` +
@@ -33,11 +33,11 @@ function sezioneDatiAnagrafici(dati) {
   const nf = dati.nucleoFamiliare;
   return [
     heading1("Dati anagrafici del Debitore e informazioni circa la situazione familiare"),
-    bodyText(
+    ...bodyText(
       `${dati.debitore.nomeCompleto}, C.F. ${dati.debitore.codiceFiscale}, residente in ${dati.debitore.residenza}, ` +
       `${dati.debitore.statoCivile || "stato civile non specificato"}, di professione ${dati.debitore.professione}.`
     ),
-    bodyText(
+    ...bodyText(
       `Il nucleo familiare è composto da ${nf.numeroComponenti} persone: ${nf.composizione}.`
     )
   ];
@@ -64,7 +64,7 @@ function sezioneSituazioneDebitoria(dati) {
       riassuntoRows
     ),
     spacer(),
-    bodyText(
+    ...bodyText(
       `Il debito residuo totale accertato è pari a € ${formatEuro(totaleResiduo)}` +
       (sd.noteDebitoResiduo ? `, ${sd.noteDebitoResiduo}.` : ".")
     ),
@@ -78,7 +78,7 @@ function sezioneSituazioneDebitoria(dati) {
     ),
     spacer(),
     heading2("Indicazione della eventuale esistenza di atti del Debitore impugnati dai creditori"),
-    bodyText(dati.attiImpugnati || "Non risultano atti del Debitore impugnati dai creditori.")
+    ...bodyText(dati.attiImpugnati || "Non risultano atti del Debitore impugnati dai creditori.")
   ];
 
   return content;
@@ -87,8 +87,38 @@ function sezioneSituazioneDebitoria(dati) {
 function sezioneCauseIndebitamento(dati) {
   return [
     heading1("Cause dell'indebitamento e diligenza impiegata dal debitore nell'assumere le obbligazioni"),
-    bodyText(dati.causeIndebitamento)
+    ...bodyText(dati.causeIndebitamento)
   ];
+}
+
+function sezioneApportoTerziEBeniEsclusi(dati) {
+  const content = [];
+
+  if (dati.apportoTerzi) {
+    const at = dati.apportoTerzi;
+    content.push(
+      heading1("Apporto di finanza esterna"),
+      ...bodyText(
+        `La proposta prevede l'apporto di € ${formatEuro(at.importo)} quale finanza esterna, ` +
+        `${at.provenienza || "messa a disposizione da terzi"}, da versare ${at.tempistica || "secondo le tempistiche indicate nel piano"}. ` +
+        (at.motivazione || "L'ammissibilità dell'apporto di finanza esterna nell'ambito della liquidazione controllata trova " +
+          "riscontro in plurimi precedenti di merito (cfr. Trib. Arezzo; Trib. Parma, sent. 49/2023), che ne riconoscono la " +
+          "compatibilità con l'unico requisito espressamente richiesto dall'art. 268, comma 3, CCII. Si dà atto che sul punto " +
+          "sussistono in giurisprudenza orientamenti non del tutto uniformi, la cui valutazione è rimessa al Tribunale adito.")
+      )
+    );
+  }
+
+  if (dati.beniEsclusiDallaLiquidazione && dati.beniEsclusiDallaLiquidazione.length > 0) {
+    content.push(
+      heading1("Beni esclusi dalla liquidazione"),
+      ...dati.beniEsclusiDallaLiquidazione.flatMap(bene =>
+        bodyText(`${bene.descrizione}: ${bene.motivazione}`)
+      )
+    );
+  }
+
+  return content;
 }
 
 function sezioneStoriaPregressa(dati) {
@@ -97,8 +127,8 @@ function sezioneStoriaPregressa(dati) {
   const sp = dati.storiaPregressaRilevante;
   return [
     heading1("Resoconto sulla solvibilità del Debitore negli ultimi 5 anni"),
-    bodyText(sp.descrizione),
-    ...(sp.riferimentiProcedurali ? [bodyText(sp.riferimentiProcedurali)] : [])
+    ...bodyText(sp.descrizione),
+    ...(sp.riferimentiProcedurali ? bodyText(sp.riferimentiProcedurali) : [])
   ];
 }
 
@@ -181,7 +211,7 @@ function sezionePatrimonioReddituale(dati) {
       [...s.voci, { descrizione: "B) Totale Spese medie Mensili", importo: totaleSpese }]
     ),
     spacer(),
-    bodyText(
+    ...bodyText(
       "In adempimento a quanto previsto dall'art. 268 del Codice della Crisi d'Impresa e dell'Insolvenza (CCII), " +
       `si procede alla quantificazione delle somme da escludere dalla liquidazione, in quanto necessarie al ` +
       `dignitoso mantenimento del debitore e del suo nucleo familiare, composto da ${dati.nucleoFamiliare.numeroComponenti} persone.`
@@ -222,7 +252,7 @@ function sezionePianoRiparto(dati) {
 
   const content = [
     heading1("Proposta di Liquidazione e Piano di Riparto"),
-    bodyText(
+    ...bodyText(
       "Sulla base delle informazioni acquisite, in relazione alla situazione debitoria, al patrimonio immobiliare " +
       "e mobiliare del debitore e alla capacità reddituale dello stesso, si riporta di seguito una proposta di " +
       "Piano di Liquidazione, al fine di evidenziare la fattibilità dello stesso."
@@ -273,7 +303,7 @@ function sezionePianoRiparto(dati) {
       pr.spesePrededucibili
     ),
     spacer(),
-    bodyText(`Il totale delle spese relative alla procedura di liquidazione sarebbe pari ad € ${formatEuro(totaleSpesePrededucibili)}.`),
+    ...bodyText(`Il totale delle spese relative alla procedura di liquidazione sarebbe pari ad € ${formatEuro(totaleSpesePrededucibili)}.`),
     tableCaption("Tabella 13: Quadro riassuntivo riparto"),
     buildTable(
       [
@@ -298,11 +328,11 @@ function sezioneGiudizioEConclusioni(dati) {
 
   return [
     heading1("Giudizio sulla completezza e attendibilità della documentazione depositata dal Debitore a corredo della proposta"),
-    bodyText(dati.giudizioAttendibilita),
+    ...bodyText(dati.giudizioAttendibilita),
     heading1("Attestazione ex art. 268, comma 3, CCII"),
-    bodyText(attestazione),
+    ...bodyText(attestazione),
     heading1("Conclusioni"),
-    bodyText(dati.conclusioni)
+    ...bodyText(dati.conclusioni)
   ];
 }
 
@@ -328,6 +358,7 @@ function generaDocumento(dati) {
     ...sezionePatrimonioReddituale(dati),
     ...sezioneStoriaPregressa(dati), // condizionale
     ...sezionePianoRiparto(dati),
+    ...sezioneApportoTerziEBeniEsclusi(dati),
     ...sezioneGiudizioEConclusioni(dati)
   ];
 

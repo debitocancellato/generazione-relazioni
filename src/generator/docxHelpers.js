@@ -86,7 +86,9 @@ function tableCaption(text) {
 }
 
 function bodyText(text) {
-  return new Paragraph({ children: [new TextRun({ text })], spacing: { after: 200 } });
+  // Rispetta la regola docx: mai usare \n dentro un TextRun, va spezzato in Paragraph distinti
+  const paragrafi = String(text).split(/\n{2,}/);
+  return paragrafi.map(p => new Paragraph({ children: [new TextRun({ text: p.trim() })], spacing: { after: 200 } }));
 }
 
 function spacer() {
