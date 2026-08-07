@@ -10,6 +10,7 @@ const {
   spacer,
   formatEuro
 } = require("./docxHelpers");
+const { validaDatiLiquidazione, controlliDiCoerenza } = require("./validate");
 
 /**
  * Genera i Paragraph/Table della sezione "Attività svolte".
@@ -112,10 +113,11 @@ function sezionePatrimonioReddituale(dati) {
 
   // Tabella 5: serie storica - anni come colonne
   const anni = r.serieStorica.map(x => x.anno);
+  const larghezzaColonnaAnno = anni.length > 0 ? 70 / anni.length : 70;
   const serieStoricaTable = buildTable(
     [
       { key: "label", label: "Descrizione", widthPct: 30 },
-      ...anni.map(a => ({ key: `y${a}`, label: `Anno ${a}`, widthPct: 70 / anni.length, format: "euro", align: "right" }))
+      ...anni.map(a => ({ key: `y${a}`, label: `Anno ${a}`, widthPct: larghezzaColonnaAnno, format: "euro", align: "right" }))
     ],
     [
       Object.assign(
@@ -192,10 +194,11 @@ function sezionePianoRiparto(dati) {
   const pr = dati.pianoRiparto;
 
   const anni = pr.cronoprogramma.map(x => x.anno);
+  const larghezzaColonnaAnnoRiparto = anni.length > 0 ? 60 / anni.length : 60;
   const cronoTable = buildTable(
     [
       { key: "label", label: "", widthPct: 40 },
-      ...anni.map(a => ({ key: `y${a}`, label: `${["I", "II", "III", "IV", "V"][a - 1] || a} Anno`, widthPct: 60 / anni.length, format: "euro", align: "right" }))
+      ...anni.map(a => ({ key: `y${a}`, label: `${["I", "II", "III", "IV", "V"][a - 1] || a} Anno`, widthPct: larghezzaColonnaAnnoRiparto, format: "euro", align: "right" }))
     ],
     [
       Object.assign({ label: "Vendita Immobili" }, Object.fromEntries(pr.cronoprogramma.map(x => [`y${x.anno}`, x.venditaImmobili]))),
@@ -318,6 +321,45 @@ function generaDocumento(dati) {
   });
 }
 
+/**
+ * Legge e valida il file JSON di input. Lancia errori con messaggi chiari in italiano
+ * per ognuno dei modi in cui l'input può essere malformato.
+ */
+function caricaEValidaInput(inputPath) {
+  const resolved = path.resolve(inputPath);
+
+  if (!fs.existsSync(resolved)) {
+    throw new Error(`File non trovato: ${resolved}`);
+  }
+
+  let raw;
+  try {
+    raw = fs.readFileSync(resolved, "utf-8");
+  } catch (e) {
+    throw new Error(`Impossibile leggere il file ${resolved}: ${e.message}`);
+  }
+
+  let dati;
+  try {
+    dati = JSON.parse(raw);
+  } catch (e) {
+    throw new Error(`Il file ${resolved} non è un JSON valido: ${e.message}`);
+  }
+
+  const { valid, errors } = validaDatiLiquidazione(dati);
+  if (!valid) {
+    const elenco = errors.map(e => `  - ${e}`).join("\n");
+    throw new Error(`I dati non rispettano lo schema atteso:\n${elenco}`);
+  }
+
+  const warnings = controlliDiCoerenza(dati);
+  if (warnings.length > 0) {
+    warnings.forEach(w => console.warn(w));
+  }
+
+  return dati;
+}
+
 async function main() {
   const [, , inputPath, outputPath] = process.argv;
   if (!inputPath || !outputPath) {
@@ -325,20 +367,39 @@ async function main() {
     process.exit(1);
   }
 
-  const dati = JSON.parse(fs.readFileSync(path.resolve(inputPath), "utf-8"));
-  const doc = generaDocumento(dati);
-  const buffer = await Packer.toBuffer(doc);
+  let dati;
+  try {
+    dati = caricaEValidaInput(inputPath);
+  } catch (e) {
+    console.error(`\nErrore nei dati di input:\n${e.message}\n`);
+    process.exit(1);
+  }
 
-  fs.mkdirSync(path.dirname(path.resolve(outputPath)), { recursive: true });
-  fs.writeFileSync(path.resolve(outputPath), buffer);
+  let buffer;
+  try {
+    const doc = generaDocumento(dati);
+    buffer = await Packer.toBuffer(doc);
+  } catch (e) {
+    console.error(`\nErrore durante la generazione del documento Word: ${e.message}\n`);
+    process.exit(1);
+  }
+
+  try {
+    fs.mkdirSync(path.dirname(path.resolve(outputPath)), { recursive: true });
+    fs.writeFileSync(path.resolve(outputPath), buffer);
+  } catch (e) {
+    console.error(`\nErrore nel salvataggio del file di output: ${e.message}\n`);
+    process.exit(1);
+  }
+
   console.log(`Relazione generata: ${outputPath}`);
 }
 
 if (require.main === module) {
   main().catch(err => {
-    console.error(err);
+    console.error(`\nErrore imprevisto: ${err.message}\n`);
     process.exit(1);
   });
 }
 
-module.exports = { generaDocumento };
+module.exports = { generaDocumento, caricaEValidaInput };

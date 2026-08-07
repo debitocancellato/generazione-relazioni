@@ -11,6 +11,8 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "docx": "^9.0.2"
   }
 }

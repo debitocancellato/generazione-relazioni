@@ -1,7 +1,9 @@
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 const { Packer } = require("docx");
-const { generaDocumento } = require("../src/generator/generaLiquidazione");
+const { generaDocumento, caricaEValidaInput } = require("../src/generator/generaLiquidazione");
+const { validaDatiLiquidazione, controlliDiCoerenza } = require("../src/generator/validate");
 
 function loadSample(name) {
   const p = path.join(__dirname, "..", "src", "data", "samples", name);
@@ -35,8 +37,85 @@ async function testCalcoliDerivati() {
   console.log("✓ testCalcoliDerivati: somma spese corretta");
 }
 
+async function testValidazioneRifiutaCampoMancante() {
+  const dati = loadSample("liquidazione_demo.json");
+  delete dati.debitore.codiceFiscale;
+  const { valid, errors } = validaDatiLiquidazione(dati);
+  if (valid) throw new Error("Atteso valid=false per campo obbligatorio mancante");
+  if (!errors.some(e => e.includes("codiceFiscale"))) {
+    throw new Error("Il messaggio di errore non menziona il campo mancante: " + errors.join(" | "));
+  }
+  console.log("✓ testValidazioneRifiutaCampoMancante: errore chiaro e corretto");
+}
+
+async function testValidazioneRifiutaArrayVuoto() {
+  const dati = loadSample("liquidazione_demo.json");
+  dati.spese.voci = [];
+  const { valid } = validaDatiLiquidazione(dati);
+  if (valid) throw new Error("Atteso valid=false per array vuoto dove minItems=1");
+  console.log("✓ testValidazioneRifiutaArrayVuoto: array vuoto correttamente rifiutato");
+}
+
+async function testValidazioneRifiutaTipoErrato() {
+  const dati = loadSample("liquidazione_demo.json");
+  dati.situazioneDebitoria.riassuntoPerTipologia[0].importoResiduo = "non un numero";
+  const { valid } = validaDatiLiquidazione(dati);
+  if (valid) throw new Error("Atteso valid=false per tipo errato");
+  console.log("✓ testValidazioneRifiutaTipoErrato: tipo errato correttamente rifiutato");
+}
+
+async function testValidazioneAccettaDataFormatoItaliano() {
+  const dati = loadSample("liquidazione_demo.json");
+  const { valid, errors } = validaDatiLiquidazione(dati);
+  if (!valid) throw new Error("Dati di esempio validi rifiutati: " + errors.join(" | "));
+  console.log("✓ testValidazioneAccettaDataFormatoItaliano: formato GG/MM/AAAA accettato");
+}
+
+async function testWarningCoerenzaNonBlocca() {
+  const dati = loadSample("liquidazione_demo.json");
+  dati.situazioneDebitoria.debitoResiduoTotale = 999999.00; // non coincide con la somma delle voci
+  const { valid } = validaDatiLiquidazione(dati);
+  if (!valid) throw new Error("I warning di coerenza non devono bloccare la validazione dello schema");
+  const warnings = controlliDiCoerenza(dati);
+  if (warnings.length === 0) throw new Error("Atteso almeno un warning di coerenza");
+  console.log("✓ testWarningCoerenzaNonBlocca: warning generato senza bloccare");
+}
+
+async function testCaricaEValidaInputFileInesistente() {
+  try {
+    caricaEValidaInput("/tmp/questo_file_non_esiste_123.json");
+    throw new Error("Atteso un errore per file inesistente");
+  } catch (e) {
+    if (!e.message.includes("non trovato")) throw new Error("Messaggio di errore non chiaro: " + e.message);
+  }
+  console.log("✓ testCaricaEValidaInputFileInesistente: errore chiaro per file mancante");
+}
+
+async function testCaricaEValidaInputJsonMalformato() {
+  const p = path.join(os.tmpdir(), "malformato_test.json");
+  fs.writeFileSync(p, "{ questo non è json valido");
+  try {
+    caricaEValidaInput(p);
+    throw new Error("Atteso un errore per JSON malformato");
+  } catch (e) {
+    if (!e.message.includes("JSON valido")) throw new Error("Messaggio di errore non chiaro: " + e.message);
+  }
+  console.log("✓ testCaricaEValidaInputJsonMalformato: errore chiaro per JSON malformato");
+}
+
 async function run() {
-  const tests = [testGenerazioneBase, testSezioneCondizionalePresente, testCalcoliDerivati];
+  const tests = [
+    testGenerazioneBase,
+    testSezioneCondizionalePresente,
+    testCalcoliDerivati,
+    testValidazioneRifiutaCampoMancante,
+    testValidazioneRifiutaArrayVuoto,
+    testValidazioneRifiutaTipoErrato,
+    testValidazioneAccettaDataFormatoItaliano,
+    testWarningCoerenzaNonBlocca,
+    testCaricaEValidaInputFileInesistente,
+    testCaricaEValidaInputJsonMalformato
+  ];
   let failed = 0;
   for (const t of tests) {
     try {
