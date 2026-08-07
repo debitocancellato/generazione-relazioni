@@ -1,0 +1,16 @@
+{
+  "name": "generazione-relazioni",
+  "version": "0.1.0",
+  "description": "Motore di generazione relazioni OCC (sovraindebitamento) per DebitoCancellato - MVP",
+  "main": "src/generator/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node tests/run.js",
+    "genera:liquidazione:demo": "node src/generator/generaLiquidazione.js src/data/samples/liquidazione_demo.json output/relazione_demo.docx"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "docx": "^9.0.2"
+  }
+}
