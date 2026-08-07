@@ -84,6 +84,13 @@ function sezioneSituazioneDebitoria(dati) {
   return content;
 }
 
+function sezioneCauseIndebitamento(dati) {
+  return [
+    heading1("Cause dell'indebitamento e diligenza impiegata dal debitore nell'assumere le obbligazioni"),
+    bodyText(dati.causeIndebitamento)
+  ];
+}
+
 function sezioneStoriaPregressa(dati) {
   // SEZIONE CONDIZIONALE: generata solo se dati.storiaPregressaRilevante è valorizzato
   if (!dati.storiaPregressaRilevante) return [];
@@ -284,9 +291,16 @@ function sezionePianoRiparto(dati) {
 }
 
 function sezioneGiudizioEConclusioni(dati) {
+  const attestazione = dati.attestazioneArt268 ||
+    "Sulla base dell'analisi svolta sulla situazione patrimoniale e reddituale del debitore, si attesta che non risulta " +
+    "possibile acquisire ulteriore attivo da distribuire ai creditori, neppure mediante l'esercizio di azioni giudiziarie " +
+    "(art. 268, comma 3, quarto periodo, CCII).";
+
   return [
     heading1("Giudizio sulla completezza e attendibilità della documentazione depositata dal Debitore a corredo della proposta"),
     bodyText(dati.giudizioAttendibilita),
+    heading1("Attestazione ex art. 268, comma 3, CCII"),
+    bodyText(attestazione),
     heading1("Conclusioni"),
     bodyText(dati.conclusioni)
   ];
@@ -308,6 +322,7 @@ function generaDocumento(dati) {
     spacer(),
     ...sezioneAttivitaSvolte(dati),
     ...sezioneDatiAnagrafici(dati),
+    ...sezioneCauseIndebitamento(dati),
     heading1("Esposizione della situazione del Debitore"),
     ...sezioneSituazioneDebitoria(dati),
     ...sezionePatrimonioReddituale(dati),
