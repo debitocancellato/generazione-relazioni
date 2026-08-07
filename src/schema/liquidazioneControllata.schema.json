@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dati pratica - Liquidazione controllata (art. 268 e ss. CCII)",
+  "description": "Schema dati per la generazione della relazione OCC di Liquidazione controllata. Riflette la struttura ricorrente osservata in 5 relazioni approvate dal Tribunale (Zambrano, Iervolino, Iuliano, Ruggiero, Russo).",
+  "type": "object",
+  "required": ["pratica", "debitore", "nucleoFamiliare", "situazioneDebitoria", "patrimonio", "redditi", "spese", "pianoRiparto", "giudizioAttendibilita", "conclusioni"],
+  "properties": {
+    "pratica": {
+      "type": "object",
+      "required": ["numeroRG", "tribunale", "dataNominaOCC", "nomeOCC"],
+      "properties": {
+        "numeroRG": { "type": "string", "description": "Numero di ruolo generale della procedura" },
+        "tribunale": { "type": "string" },
+        "dataNominaOCC": { "type": "string", "format": "date" },
+        "nomeOCC": { "type": "string", "description": "Nominativo dell'Organismo di Composizione della Crisi / gestore incaricato" }
+      }
+    },
+    "debitore": {
+      "type": "object",
+      "required": ["nomeCompleto", "codiceFiscale", "residenza", "professione"],
+      "properties": {
+        "nomeCompleto": { "type": "string" },
+        "codiceFiscale": { "type": "string" },
+        "residenza": { "type": "string" },
+        "statoCivile": { "type": "string" },
+        "professione": { "type": "string" }
+      }
+    },
+    "nucleoFamiliare": {
+      "type": "object",
+      "required": ["numeroComponenti", "composizione"],
+      "properties": {
+        "numeroComponenti": { "type": "integer" },
+        "composizione": {
+          "type": "string",
+          "description": "Descrizione testuale del nucleo (es. 'coniuge, un figlio minorenne e due figli maggiorenni non autosufficienti')"
+        }
+      }
+    },
+    "storiaPregressaRilevante": {
+      "type": ["object", "null"],
+      "description": "SEZIONE CONDIZIONALE - valorizzare SOLO se esiste una storia pregressa che spiega la situazione di solvibilità (es. fallimento societario, cessazione attività d'impresa). Se null, la sezione 'Resoconto sulla solvibilità negli ultimi 5 anni' non viene generata.",
+      "properties": {
+        "descrizione": { "type": "string", "description": "Narrazione della vicenda pregressa" },
+        "riferimentiProcedurali": { "type": "string", "description": "Es. numero e data sentenza fallimentare, tribunale, data chiusura procedura" }
+      }
+    },
+    "attiImpugnati": {
+      "type": "string",
+      "default": "Non risultano atti del Debitore impugnati dai creditori.",
+      "description": "Di norma 'nessuno', valorizzare solo se presenti contenziosi pendenti"
+    },
+    "situazioneDebitoria": {
+      "type": "object",
+      "required": ["riassuntoPerTipologia", "dettaglioPerCreditore", "debitoResiduoTotale"],
+      "properties": {
+        "riassuntoPerTipologia": {
+          "type": "array",
+          "description": "Tabella 2 - Riassunto situazione debitoria",
+          "items": {
+            "type": "object",
+            "required": ["tipologia", "importoResiduo"],
+            "properties": {
+              "tipologia": { "type": "string", "description": "Es. Mutui chirografari, Tributi, Fin. Credito al consumo, Contributi, Debiti per retribuzioni professionisti" },
+              "importoResiduo": { "type": "number" }
+            }
+          }
+        },
+        "dettaglioPerCreditore": {
+          "type": "array",
+          "description": "Tabella 3 - Dettaglio situazione debitoria",
+          "items": {
+            "type": "object",
+            "required": ["tipologia", "creditore"],
+            "properties": {
+              "tipologia": { "type": "string" },
+              "creditore": { "type": "string" }
+            }
+          }
+        },
+        "debitoResiduoTotale": { "type": "number" },
+        "noteDebitoResiduo": { "type": "string", "description": "Es. eventuali riserve su documentazione mancante" }
+      }
+    },
+    "patrimonio": {
+      "type": "object",
+      "required": ["valoreImmobiliare", "valoreMobiliare", "valorePrimaCasa"],
+      "properties": {
+        "valoreImmobiliare": { "type": "number" },
+        "valoreMobiliare": { "type": "number" },
+        "valorePrimaCasa": { "type": "number" },
+        "elencoImmobili": { "type": "array", "items": { "type": "object", "properties": { "descrizione": { "type": "string" }, "valoreRealizzo": { "type": "number" }, "dataVenditaStimata": { "type": "string" } } } },
+        "elencoMobili": { "type": "array", "items": { "type": "object", "properties": { "descrizione": { "type": "string" }, "valoreRealizzo": { "type": "number" }, "dataVenditaStimata": { "type": "string" } } } }
+      }
+    },
+    "redditi": {
+      "type": "object",
+      "required": ["serieStorica", "annoCorrente"],
+      "properties": {
+        "serieStorica": {
+          "type": "array",
+          "description": "Tabella 5 - Serie storica dati reddituali (tipicamente ultimi 6 anni)",
+          "items": {
+            "type": "object",
+            "required": ["anno", "redditoDebitore"],
+            "properties": {
+              "anno": { "type": "integer" },
+              "redditoDebitore": { "type": "number" },
+              "altroReddito": { "type": "number", "default": 0 }
+            }
+          }
+        },
+        "annoCorrente": {
+          "type": "object",
+          "description": "Tabella 6 - Dati reddituali anno corrente",
+          "required": ["redditoNettoMedioMensileDebitore"],
+          "properties": {
+            "redditoNettoMedioMensileDebitore": { "type": "number" },
+            "redditoNettoMedioMensileConiuge": { "type": "number", "default": 0 },
+            "ulterioreRedditoNettoMedioMensile": { "type": "number", "default": 0 }
+          }
+        }
+      }
+    },
+    "spese": {
+      "type": "object",
+      "required": ["voci"],
+      "properties": {
+        "voci": {
+          "type": "array",
+          "description": "Tabella 7 - Spese medie mensili nucleo familiare",
+          "items": {
+            "type": "object",
+            "required": ["descrizione", "importo"],
+            "properties": {
+              "descrizione": { "type": "string", "description": "Es. Spese alimentari, Abbigliamento e calzature, Utenze, Trasporti, Telefonia, Servizi sanitari" },
+              "importo": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "pianoRiparto": {
+      "type": "object",
+      "required": ["cronoprogramma", "spesePrededucibili", "quadroRiassuntivoRiparto"],
+      "properties": {
+        "cronoprogramma": {
+          "type": "array",
+          "description": "Tabella 9 - Cronoprogramma liquidazione, un elemento per anno di procedura",
+          "items": {
+            "type": "object",
+            "required": ["anno", "venditaImmobili", "venditaMobili", "redditoADisposizione"],
+            "properties": {
+              "anno": { "type": "integer", "description": "1, 2, 3..." },
+              "venditaImmobili": { "type": "number" },
+              "venditaMobili": { "type": "number" },
+              "redditoADisposizione": { "type": "number" }
+            }
+          }
+        },
+        "spesePrededucibili": {
+          "type": "array",
+          "description": "Tabella 12",
+          "items": {
+            "type": "object",
+            "required": ["descrizione", "importo"],
+            "properties": {
+              "descrizione": { "type": "string", "description": "Tipicamente Compenso O.C.C." },
+              "importo": { "type": "number" },
+              "data": { "type": "string" }
+            }
+          }
+        },
+        "quadroRiassuntivoRiparto": {
+          "type": "array",
+          "description": "Tabella 13",
+          "items": {
+            "type": "object",
+            "required": ["categoria", "totaleCredito", "creditoSoddisfatto", "percentualeSoddisfazione"],
+            "properties": {
+              "categoria": { "type": "string", "description": "Es. Crediti Prededucibili, Crediti Privilegiati Immobiliari, Crediti Privilegiati Mobiliari, Crediti Chirografari" },
+              "totaleCredito": { "type": "number" },
+              "creditoSoddisfatto": { "type": "number" },
+              "percentualeSoddisfazione": { "type": "number" },
+              "liquidatoPrivilegiato": { "type": "number", "default": 0 },
+              "liquidatoChirografario": { "type": "number", "default": 0 }
+            }
+          }
+        }
+      }
+    },
+    "giudizioAttendibilita": {
+      "type": "string",
+      "description": "Sezione argomentativa - valutazione completezza/attendibilità della documentazione depositata"
+    },
+    "conclusioni": {
+      "type": "string",
+      "description": "Sezione conclusiva con richiesta di omologa"
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "pratica": {
+    "numeroRG": "1234/2026",
+    "tribunale": "Taranto",
+    "dataNominaOCC": "10/01/2026",
+    "nomeOCC": "Dott. Mario Rossi"
+  },
+  "debitore": {
+    "nomeCompleto": "GIUSEPPE VERDI",
+    "codiceFiscale": "VRDGPP70A01L049X",
+    "residenza": "Via Roma 10, Taranto (TA)",
+    "statoCivile": "coniugato",
+    "professione": "operaio"
+  },
+  "nucleoFamiliare": {
+    "numeroComponenti": 4,
+    "composizione": "coniuge, un figlio minorenne e un figlio maggiorenne non economicamente autosufficiente"
+  },
+  "storiaPregressaRilevante": {
+    "descrizione": "Il Sig. Verdi ha avviato un'attività di ristorazione cessata nel 2016 a seguito di una crisi di mercato, evento che ha determinato l'esposizione debitoria personale per obbligazioni contratte nell'esercizio dell'attività d'impresa.",
+    "riferimentiProcedurali": "L'attività è stata cancellata dal Registro Imprese in data 15/03/2017."
+  },
+  "attiImpugnati": "Non risultano atti del Debitore impugnati dai creditori.",
+  "situazioneDebitoria": {
+    "riassuntoPerTipologia": [
+      { "tipologia": "Mutui chirografari", "importoResiduo": 210000.00 },
+      { "tipologia": "Tributi", "importoResiduo": 95000.00 },
+      { "tipologia": "Fin. Credito al consumo", "importoResiduo": 28000.00 },
+      { "tipologia": "Contributi", "importoResiduo": 15000.00 }
+    ],
+    "dettaglioPerCreditore": [
+      { "tipologia": "Mutuo chirografario", "creditore": "1 - Banca Esempio S.p.A." },
+      { "tipologia": "Mutuo chirografario", "creditore": "2 - Istituto di Credito Alfa" },
+      { "tipologia": "Tributi", "creditore": "3 - Agenzia Entrate Riscossione" },
+      { "tipologia": "Fin. Credito al consumo", "creditore": "4 - Finanziaria Beta S.p.A." },
+      { "tipologia": "Contributi", "creditore": "5 - Agenzia Entrate Riscossione" }
+    ],
+    "debitoResiduoTotale": 348000.00,
+    "noteDebitoResiduo": "salvo eventuali aggiornamenti in fase di precisazione del credito"
+  },
+  "patrimonio": {
+    "valoreImmobiliare": 0,
+    "valoreMobiliare": 12000.00,
+    "valorePrimaCasa": 0,
+    "elencoMobili": [
+      { "descrizione": "Bene generico - reddito disponibile per liquidazione", "valoreRealizzo": 12000.00, "dataVenditaStimata": "01/01/2027" }
+    ]
+  },
+  "redditi": {
+    "serieStorica": [
+      { "anno": 2020, "redditoDebitore": 9500, "altroReddito": 0 },
+      { "anno": 2021, "redditoDebitore": 11200, "altroReddito": 0 },
+      { "anno": 2022, "redditoDebitore": 14300, "altroReddito": 0 },
+      { "anno": 2023, "redditoDebitore": 15800, "altroReddito": 0 },
+      { "anno": 2024, "redditoDebitore": 16500, "altroReddito": 0 },
+      { "anno": 2025, "redditoDebitore": 17200, "altroReddito": 0 }
+    ],
+    "annoCorrente": {
+      "redditoNettoMedioMensileDebitore": 1450.00,
+      "redditoNettoMedioMensileConiuge": 0,
+      "ulterioreRedditoNettoMedioMensile": 0
+    }
+  },
+  "spese": {
+    "voci": [
+      { "descrizione": "Spese alimentari", "importo": 550 },
+      { "descrizione": "Abbigliamento e calzature", "importo": 90 },
+      { "descrizione": "Utenze", "importo": 220 },
+      { "descrizione": "Spese auto/trasporti", "importo": 80 },
+      { "descrizione": "Telefonia", "importo": 60 },
+      { "descrizione": "Servizi sanitari", "importo": 150 }
+    ]
+  },
+  "pianoRiparto": {
+    "cronoprogramma": [
+      { "anno": 1, "venditaImmobili": 0, "venditaMobili": 0, "redditoADisposizione": 4200.00 },
+      { "anno": 2, "venditaImmobili": 0, "venditaMobili": 0, "redditoADisposizione": 4200.00 },
+      { "anno": 3, "venditaImmobili": 0, "venditaMobili": 0, "redditoADisposizione": 4200.00 }
+    ],
+    "spesePrededucibili": [
+      { "descrizione": "Compenso O.C.C.", "importo": 3200.00, "data": "01/01/2027" }
+    ],
+    "quadroRiassuntivoRiparto": [
+      { "categoria": "Crediti Prededucibili", "totaleCredito": 3200.00, "creditoSoddisfatto": 3200.00, "percentualeSoddisfazione": 100.00, "liquidatoPrivilegiato": 3200.00 },
+      { "categoria": "Crediti Chirografari", "totaleCredito": 348000.00, "creditoSoddisfatto": 9400.00, "percentualeSoddisfazione": 2.70, "liquidatoPrivilegiato": 0 }
+    ]
+  },
+  "giudizioAttendibilita": "La documentazione depositata dal debitore risulta completa e coerente con quanto dichiarato nella domanda. I dati reddituali e patrimoniali sono stati riscontrati attraverso la documentazione bancaria, fiscale e previdenziale acquisita, che si ritiene pertanto attendibile ai fini della presente relazione.",
+  "conclusioni": "Alla luce di quanto sopra esposto, ritenuta la sussistenza dei presupposti di cui all'art. 268 CCII, si chiede a codesto Ill.mo Tribunale di voler omologare la proposta di liquidazione controllata come sopra formulata."
+}
