@@ -103,6 +103,83 @@ async function testCaricaEValidaInputJsonMalformato() {
   console.log("✓ testCaricaEValidaInputJsonMalformato: errore chiaro per JSON malformato");
 }
 
+const { eseguiAudit, raggruppaPerSezione, rilevaImpreseCessate, rilevaCointestazioni, rilevaDatiMancanti } = require("../src/audit/auditPratica");
+
+async function testAuditRilevaImpresaCessata() {
+  const dati = loadSample("audit_demo.json");
+  const segnalazioni = rilevaImpreseCessate(dati);
+  if (segnalazioni.length !== 1) throw new Error(`Attese 1 segnalazione impresa cessata, trovate ${segnalazioni.length}`);
+  if (!segnalazioni[0].sezioniRelazione.includes("causeIndebitamento")) {
+    throw new Error("La segnalazione impresa cessata deve essere collegata a 'causeIndebitamento'");
+  }
+  console.log("✓ testAuditRilevaImpresaCessata: rilevata correttamente");
+}
+
+async function testAuditRilevaCointestazione() {
+  const dati = loadSample("audit_demo.json");
+  const segnalazioni = rilevaCointestazioni(dati);
+  if (segnalazioni.length !== 1) throw new Error(`Attesa 1 segnalazione cointestazione, trovate ${segnalazioni.length}`);
+  if (!segnalazioni[0].messaggio.includes("Coniuge Rossi")) {
+    throw new Error("La segnalazione dovrebbe menzionare il cointestatario");
+  }
+  console.log("✓ testAuditRilevaCointestazione: rilevata correttamente");
+}
+
+async function testAuditRilevaDatiMancanti() {
+  const dati = loadSample("audit_demo.json");
+  const segnalazioni = rilevaDatiMancanti(dati);
+  const ids = segnalazioni.map(s => s.id);
+  if (!ids.includes("dato-mancante-patrimonio-immobiliare")) {
+    throw new Error("Doveva segnalare il valore immobiliare mancante (valoreImmobiliareNoto: false nel fixture)");
+  }
+  if (!ids.includes("dato-mancante-serie-storica-redditi")) {
+    throw new Error("Doveva segnalare la serie storica redditi insufficiente (solo 1 anno nel fixture)");
+  }
+  console.log("✓ testAuditRilevaDatiMancanti: entrambe le lacune rilevate correttamente");
+}
+
+async function testAuditNessunFalsoPositivo() {
+  const datiPuliti = {
+    debitore: { nomeCompleto: "Test Pulito" },
+    nucleoFamiliare: { numeroComponenti: 2, numeroMinorenni: 0 },
+    impreseStoriche: [],
+    procedureConcorsualiPregresse: [],
+    creditori: [
+      { nome: "Banca X", tipologia: "finanziamento", importoResiduo: 5000, rateizzazioneAttiva: false, garanziaReale: false }
+    ],
+    redditi: [{ anno: 2024 }, { anno: 2025 }],
+    patrimonio: { valoreImmobiliareNoto: true }
+  };
+  const segnalazioni = eseguiAudit(datiPuliti);
+  if (segnalazioni.length !== 0) {
+    throw new Error(`Attese 0 segnalazioni su dati puliti, trovate ${segnalazioni.length}: ${JSON.stringify(segnalazioni.map(s => s.id))}`);
+  }
+  console.log("✓ testAuditNessunFalsoPositivo: nessuna segnalazione spuria su dati completi e puliti");
+}
+
+async function testAuditOrdinamentoPerGravita() {
+  const dati = loadSample("audit_demo.json");
+  const segnalazioni = eseguiAudit(dati);
+  const livelli = segnalazioni.map(s => s.livello);
+  const ordineAtteso = { critico: 0, attenzione: 1, info: 2 };
+  for (let i = 1; i < livelli.length; i++) {
+    if (ordineAtteso[livelli[i]] < ordineAtteso[livelli[i - 1]]) {
+      throw new Error(`Ordinamento per gravità violato: ${livelli[i - 1]} seguito da ${livelli[i]}`);
+    }
+  }
+  console.log("✓ testAuditOrdinamentoPerGravita: segnalazioni ordinate correttamente (critico → attenzione → info)");
+}
+
+async function testRaggruppaPerSezione() {
+  const dati = loadSample("audit_demo.json");
+  const segnalazioni = eseguiAudit(dati);
+  const gruppi = raggruppaPerSezione(segnalazioni);
+  if (!gruppi.causeIndebitamento || gruppi.causeIndebitamento.length === 0) {
+    throw new Error("Ci si aspettava almeno una segnalazione raggruppata sotto 'causeIndebitamento'");
+  }
+  console.log("✓ testRaggruppaPerSezione: raggruppamento per sezione funzionante");
+}
+
 async function run() {
   const tests = [
     testGenerazioneBase,
@@ -114,7 +191,13 @@ async function run() {
     testValidazioneAccettaDataFormatoItaliano,
     testWarningCoerenzaNonBlocca,
     testCaricaEValidaInputFileInesistente,
-    testCaricaEValidaInputJsonMalformato
+    testCaricaEValidaInputJsonMalformato,
+    testAuditRilevaImpresaCessata,
+    testAuditRilevaCointestazione,
+    testAuditRilevaDatiMancanti,
+    testAuditNessunFalsoPositivo,
+    testAuditOrdinamentoPerGravita,
+    testRaggruppaPerSezione
   ];
   let failed = 0;
   for (const t of tests) {

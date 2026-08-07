@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dati grezzi per l'audit di una pratica",
+  "description": "Rappresenta i dati così come emergono dall'estrazione dei documenti caricati, PRIMA di essere organizzati nello schema finale della relazione. L'audit lavora su questi dati per produrre segnalazioni utili a scrivere le sezioni argomentative.",
+  "type": "object",
+  "properties": {
+    "debitore": {
+      "type": "object",
+      "properties": {
+        "nomeCompleto": { "type": "string" },
+        "dataNascita": { "type": "string" }
+      }
+    },
+    "nucleoFamiliare": {
+      "type": "object",
+      "properties": {
+        "numeroComponenti": { "type": "integer" },
+        "numeroMinorenni": { "type": "integer" }
+      }
+    },
+    "impreseStoriche": {
+      "type": "array",
+      "description": "Da visure camerali - imprese individuali/società di cui il debitore è stato titolare o socio",
+      "items": {
+        "type": "object",
+        "properties": {
+          "denominazione": { "type": "string" },
+          "formaGiuridica": { "type": "string" },
+          "dataIscrizione": { "type": "string" },
+          "dataCessazioneAttivita": { "type": "string" },
+          "dataCancellazione": { "type": "string" },
+          "statoImpresa": { "type": "string", "enum": ["attiva", "cessata", "cancellata"] }
+        }
+      }
+    },
+    "procedureConcorsualiPregresse": {
+      "type": "array",
+      "description": "Da sentenze/visure - fallimenti o altre procedure concorsuali chiuse riguardanti il debitore",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tipo": { "type": "string", "description": "Es. 'fallimento', 'liquidazione giudiziale'" },
+          "tribunale": { "type": "string" },
+          "numeroSentenza": { "type": "string" },
+          "dataApertura": { "type": "string" },
+          "dataChiusura": { "type": "string" },
+          "modalitaChiusura": { "type": "string", "description": "Es. 'riparto finale', 'insufficienza attivo'" }
+        }
+      }
+    },
+    "creditori": {
+      "type": "array",
+      "description": "Da cartelle, prestiti, mutui, estratti conto - ogni posizione debitoria individuata",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nome": { "type": "string" },
+          "tipologia": { "type": "string", "description": "Es. 'tributario', 'previdenziale', 'finanziamento', 'mutuo ipotecario', 'carta revolving'" },
+          "importoResiduo": { "type": "number" },
+          "dataAffidamentoOOrigine": { "type": "string" },
+          "cointestatari": { "type": "array", "items": { "type": "string" }, "description": "Altri soggetti obbligati insieme al debitore, es. coniuge su un mutuo" },
+          "rateizzazioneAttiva": { "type": "boolean" },
+          "garanziaReale": { "type": "boolean", "description": "Es. ipoteca su immobile" }
+        }
+      }
+    },
+    "redditi": {
+      "type": "array",
+      "description": "Da CU/buste paga - serie storica se disponibile",
+      "items": {
+        "type": "object",
+        "properties": {
+          "anno": { "type": "integer" },
+          "importoLordoAnnuo": { "type": "number" },
+          "nettoMedioMensile": { "type": "number" }
+        }
+      }
+    },
+    "patrimonio": {
+      "type": "object",
+      "properties": {
+        "immobili": { "type": "array", "items": { "type": "object" } },
+        "valoreImmobiliareNoto": { "type": "boolean" }
+      }
+    }
+  }
+}

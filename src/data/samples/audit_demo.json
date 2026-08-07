@@ -1,0 +1,33 @@
+{
+  "debitore": {
+    "nomeCompleto": "MARIO ROSSI",
+    "dataNascita": "1980-01-01"
+  },
+  "nucleoFamiliare": {
+    "numeroComponenti": 5,
+    "numeroMinorenni": 2
+  },
+  "impreseStoriche": [
+    {
+      "denominazione": "Rossi Impianti di Mario Rossi",
+      "formaGiuridica": "impresa individuale",
+      "dataIscrizione": "2005-03-01",
+      "dataCessazioneAttivita": "2010-06-30",
+      "dataCancellazione": "2011-01-15",
+      "statoImpresa": "cancellata"
+    }
+  ],
+  "procedureConcorsualiPregresse": [],
+  "creditori": [
+    { "nome": "Agenzia Entrate-Riscossione", "tipologia": "tributario", "importoResiduo": 60000, "rateizzazioneAttiva": false, "garanziaReale": false },
+    { "nome": "Banca Esempio", "tipologia": "mutuo ipotecario", "importoResiduo": 40000, "cointestatari": ["Coniuge Rossi"], "garanziaReale": true },
+    { "nome": "Finanziaria Alfa", "tipologia": "finanziamento", "importoResiduo": 8000, "rateizzazioneAttiva": true, "garanziaReale": false }
+  ],
+  "redditi": [
+    { "anno": 2025, "importoLordoAnnuo": 24000, "nettoMedioMensile": 1700 }
+  ],
+  "patrimonio": {
+    "immobili": [],
+    "valoreImmobiliareNoto": false
+  }
+}
